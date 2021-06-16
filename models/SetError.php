@@ -16,4 +16,13 @@ class SetError extends Model
             return $error;
         Yii::$app->session->setFlash('error', $error);
     }
+
+    public static function setErrorST($model,$error,$type = 0){
+        foreach ($model->getErrors() as $err) {
+            $error .= implode(';', $err) . '<br/>';
+        }
+        if ($type)
+            return $error;
+        Yii::$app->session->setFlash('error', $error);
+    }
 }

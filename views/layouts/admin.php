@@ -191,7 +191,11 @@ AdminAsset::register($this);
                         </div>
                         <div class="noti-scroll" data-simplebar>
 
-                        <?php $data = Log::find()->where(['in','type',[Log::TYPE_COMMENTS,Log::TYPE_USER,Log::TYPE_ORDERS,Log::TYPE_CONTACT]])->orderBy(['created_at'=>SORT_DESC])->limit(5)->all(); ?>
+                        <?php $data = Log::find()
+                            ->where(['in','type',[Log::TYPE_COMMENTS,Log::TYPE_USER,Log::TYPE_ORDERS,Log::TYPE_CONTACT]])
+                            ->andWhere(['action'=>Log::ACTION_CREATE])
+                            ->orderBy(['created_at'=>SORT_DESC])
+                            ->limit(5)->all(); ?>
                         <?php foreach ($data as $index => $log):?>
                         <?php
                             $text = '';
@@ -206,10 +210,10 @@ AdminAsset::register($this);
                             }elseif ($log->type == Log::TYPE_CONTACT){
                                 $text = Log::ACTION_DESCRIPTION[$log->action].' '.Log::TYPE_DESCRIPTION[$log->type].': '.$info['name'];
                                 $icon = '<i class="fal fa-id-card-alt"></i>';
-                            }elseif ($log->type == Log::TYPE_COMMENTS){
+                            }/*elseif ($log->type == Log::TYPE_COMMENTS){
                                 $text = Log::ACTION_DESCRIPTION[$log->action].' '.Log::TYPE_DESCRIPTION[$log->type].': '.$info['name'];
                                 $icon = '<i class="fal fa-comments"></i>';
-                            }
+                            }*/
                         ?>
                         <a href="javascript:void(0);" class="dropdown-item notify-item">
                             <div class="notify-icon bg-info">
@@ -547,6 +551,14 @@ AdminAsset::register($this);
                         <a href="<?= Url::toRoute(['admin/catalogs'])?>">
                             <i class="fal fa-network-wired"></i>
                             <span>Каталог</span>
+                        </a>
+                    </li>
+
+                    <li class="menu-title mt-2">Заимствование</li>
+                    <li>
+                        <a href="<?= Url::toRoute(['admin/compare-products'])?>">
+                            <i class="fas fa-percent"></i>
+                            <span>Назначение соответствий</span>
                         </a>
                     </li>
 

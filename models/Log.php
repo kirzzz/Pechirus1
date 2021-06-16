@@ -10,6 +10,7 @@ use yii\behaviors\TimestampBehavior;
  *
  * @property int $id
  * @property string $type
+ * @property string $type_id
  * @property string $action
  * @property int|null $status
  * @property string|null $info
@@ -76,7 +77,7 @@ class Log extends \yii\db\ActiveRecord
     {
         return [
             [['type','action'], 'required'],
-            [['status'], 'integer'],
+            [['status','type_id'], 'integer'],
             [['info'], 'string'],
             [['type'], 'string', 'max' => 64],
             [['action'], 'string', 'max' => 32],

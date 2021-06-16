@@ -173,7 +173,7 @@ class Orders extends \yii\db\ActiveRecord
     public function beforeValidate()
     {
         if (parent::beforeValidate() and !isset($this->id)) {
-            $this->article = self::generateUniqNumber(Yii::$app->user->id,time()/100000);
+            $this->article = '#'.self::generateUniqNumber(Yii::$app->user->id,time()/100000);
             $this->payment = 1;
             $basket = Basket::find()->where(['idUser'=>Yii::$app->user->id])->andWhere(['status'=>Basket::STATUS_ADD])->all();
             $this->status = self::STATUS_CONSIDERATION;
@@ -203,7 +203,7 @@ class Orders extends \yii\db\ActiveRecord
     public function afterSave($insert,$changedAttributes)
     {
         if ($insert) {
-            ($t = new Log(['type' => Log::TYPE_ORDERS,'action' => Log::ACTION_CREATE,'info' => json_encode((array)$this->attributes,JSON_UNESCAPED_UNICODE)]))->save();
+            ($t = new Log(['type_id' => $this->id,'type' => Log::TYPE_ORDERS,'action' => Log::ACTION_CREATE,'info' => json_encode((array)$this->attributes,JSON_UNESCAPED_UNICODE)]))->save();
             $body = Yii::$app->view->renderFile ( '@app/mail/layouts/email_order.php' , [
                 'order'=>Orders::find()->where(['id'=>$this->id])->one()
             ]);
@@ -225,7 +225,7 @@ class Orders extends \yii\db\ActiveRecord
                 ->setHtmlBody($body)
                 ->send();
         } else {
-            (new Log(['type' => Log::TYPE_ORDERS,'action' => Log::ACTION_UPDATE,'info' => json_encode((array)$this->attributes,JSON_UNESCAPED_UNICODE)]))->save();
+            (new Log(['type_id' => $this->id,'type' => Log::TYPE_ORDERS,'action' => Log::ACTION_UPDATE,'info' => json_encode((array)$changedAttributes,JSON_UNESCAPED_UNICODE)]))->save();
         }
         parent::afterSave($insert, $changedAttributes);
     }

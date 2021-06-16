@@ -98,10 +98,10 @@ class Catalog extends ActiveRecord
 
     public function afterSave($insert,$changedAttributes)
     {
-        if ($insert) {
-            ($t = new Log(['type' => Log::TYPE_CATALOG,'action' => Log::ACTION_CREATE,'info' => json_encode((array)$this->attributes,JSON_UNESCAPED_UNICODE)]))->save();
-        } else {
-            (new Log(['type' => Log::TYPE_CATALOG,'action' => Log::ACTION_UPDATE,'info' => json_encode((array)$this->attributes,JSON_UNESCAPED_UNICODE)]))->save();
+        if(!$insert){
+            (new Log(['type_id' => $this->id,'type' => Log::TYPE_CATALOG,'action' => Log::ACTION_UPDATE,'info' => json_encode((array)$changedAttributes,JSON_UNESCAPED_UNICODE)]))->save();
+        }else{
+            (new Log(['type_id' => $this->id,'type' => Log::TYPE_CATALOG,'action' => Log::ACTION_CREATE,'info' => json_encode((array)$this->attributes,JSON_UNESCAPED_UNICODE)]))->save();
         }
         parent::afterSave($insert, $changedAttributes);
     }

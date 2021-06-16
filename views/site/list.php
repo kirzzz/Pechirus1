@@ -16,7 +16,7 @@ $get = Yii::$app->request->get();
 
 $new_catalog = \yii\helpers\ArrayHelper::map((array)$catalogs,'article','name','idParent');
 $helper_catalog = (isset($get['catalog'])?($catalogs[array_search($get['catalog'],array_column((array)$catalogs,'id'))]['name']):'Каталог');
-$this->title = 'Pechirus: '.$helper_catalog;
+$this->title = 'ПечиРус - '.$helper_catalog . '. Страница - '.($pages->page + 1);
 $this->registerMetaTag(['name' => 'keywords', 'content' => 'ПечиРус, Pechirus, Печи, '.implode(',',explode(' ',$helper_catalog))]);
 $this->registerMetaTag(['name' => 'description', 'content' => 'Печи в Москве от надежных поставщиков по низким ценам с гарантией. Телефон для консультации +7 (495) 540-47-03. Печи, Котлы, Дымоходы и аксессуары для бани и сауны. Более 3-х тысяч товаров.'.$helper_catalog]);
 $this->params['breadcrumbs'][] = $this->title;

@@ -90,7 +90,6 @@ class MultiUpload extends Model
                 $product->new_price = ((trim($column['H']) !== '' and is_numeric($column['H']))?$column['H']:$product->new_price);
                 $product->in_stock = ((trim($column['K']) !== '' and is_numeric($column['K']))?$column['K']:$product->in_stock);
                 $product->hidden = ((trim($column['L']) !== '' and is_numeric($column['L']))?$column['L']:$product->hidden);
-                $product->save();
                 if($product->save()){
                     $output[] = ['row'=>$row,'id'=>$column['A'],'status'=>'Успех','info'=>'Продукт успешно обновлен!'];
                 }else{
