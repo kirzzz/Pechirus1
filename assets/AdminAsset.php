@@ -36,7 +36,8 @@ class AdminAsset extends AssetBundle
         //'admin/gulpfile.js',
         'admin/src/js/test.js',
         'admin/src/js/layout.js',
-        'admin/src/js/admin.js'
+        'admin/src/js/admin.js',
+        'admin/src/js/functions.js',
     ];
     public $depends = [
         'yii\web\YiiAsset',

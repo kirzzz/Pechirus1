@@ -12,9 +12,11 @@ use app\models\MultiUnload;
 use app\models\MultiUpload;
 use app\models\Orders;
 use app\models\Product;
+use app\models\ProductToSteal;
 use app\models\Provider;
 use app\models\SetError;
 use app\models\Shipment;
+use app\models\Steal;
 use app\models\UploadForm;
 use app\models\UploadFormMulti;
 use app\models\User;
@@ -27,6 +29,7 @@ use yii\web\Controller;
 use yii\web\Response;
 use yii\filters\VerbFilter;
 use yii\web\UploadedFile;
+use function Matrix\trace;
 
 class AdminController extends Controller
 {
@@ -40,12 +43,16 @@ class AdminController extends Controller
                 'class' => AccessControl::className(),
                 'only' => ['basket','brands','catalogs','comments','contact','index',
                     'notifications','orders','orders-details','shipments','user-edit','users','products',
-                    'product','provider','upload','multiupload','product-fast-edit','functions','massupload'],
+                    'product','provider','upload','multiupload','product-fast-edit','functions','massupload',
+                    'compare-products'
+                ],
                 'rules' => [
                     [
                         'actions' => ['basket','brands','catalogs','comments','contact','index',
                             'notifications','orders','orders-details','shipments','user-edit','users','products',
-                            'product','provider','upload','multiupload','product-fast-edit','functions','massupload'],
+                            'product','provider','upload','multiupload','product-fast-edit','functions','massupload',
+                            'compare-products'
+                        ],
                         'allow' => true,
                         'roles' => ['admin'],
                     ],
@@ -315,7 +322,6 @@ class AdminController extends Controller
                 $product->count = (isset($post['data']['count']) and $post['data']['count'] !== '')?$post['data']['count']:$product->count;
                 $product->hidden = (isset($post['data']['hidden']) and $post['data']['hidden'] !== '')?$post['data']['hidden']:$product->hidden;
                 $product->status = (isset($post['data']['status']) and $post['data']['status'] !== '')?$post['data']['status']:$product->status;
-                $product->save();
                 if(!$product->save()){
                     $data['error'] = $error->setError($product,'',1);
                 }else{
@@ -332,11 +338,11 @@ class AdminController extends Controller
     }
 
     public function actionFunctions(){
-        $data = ['success'=>false];
+        $data = ['success'=>false,'text'=>''];
         $error = new SetError();
         if(Yii::$app->request->isAjax){
             $post = Yii::$app->request->post();
-            $functions = ['catalog-show'];
+            $functions = ['catalog-show','steal-compare'];
             if(isset($post['function']) and in_array($post['function'],$functions)){
                 if($post['function'] == 'catalog-show'){
                     if (isset($post['id'])) {
@@ -354,6 +360,65 @@ class AdminController extends Controller
                         }
                     } else {
                         $data['error'] = 'Не удалось определить передаваемый идентификатор каталога';
+                    }
+                }elseif ($post['function'] == 'steal-compare'){
+                    if(isset($post['id'])){
+                        $compare = ProductToSteal::find()->where(['id'=>$post['id']])->one();
+                        if(isset($compare->id)){
+                            $product = Product::find()->where(['id'=>$compare->id_product])->one();
+                            $steal = Steal::find()->where(['offerId'=>$compare->id_steal])->one();
+                            if(isset($steal->id) and isset($product->id)){
+                                $types = ['remove','options','description','all','remove-all','accept'];
+                                if(isset($post['type']) and in_array($post['type'],$types)){
+                                    if($post['type'] == 'remove'){
+                                        ProductToSteal::updateAll(['status'=>ProductToSteal::STATUS_REJECTED],['id'=>$compare->id]);
+                                        $data['success'] = true;
+                                        $data['text'] = 'Данный продукт был успешно исключен из сравнения.';
+                                        $data['data'] = ['color'=>'red','type'=>'one'];
+                                    }
+                                    if($post['type'] == 'remove-all'){
+                                        ProductToSteal::updateAll(['status'=>ProductToSteal::STATUS_REJECTED],['id_product'=>$compare->id_product,'status'=>ProductToSteal::STATUS_NO_SOLUTION]);
+                                        $data['success'] = true;
+                                        $data['text'] = 'Данные продукты были успешно исключены из сравнения.';
+                                        $data['data'] = ['color'=>'red','type'=>'all'];
+                                    }
+                                    if ($post['type'] == 'options' or $post['type'] == 'all'){
+                                        $product->property = json_encode(["myrows" =>json_decode($steal->parameters,true)],JSON_UNESCAPED_UNICODE);
+                                        if($product->save()){
+                                            $data['success'] = true;
+                                            $data['text'] .= 'Характеристики продукта были успешно обновлены.';
+                                        }else{
+                                            $data['error'] = 'Не удалось обновить характеристики продукта.'.SetError::setErrorST($product,'',1);
+                                        }
+                                    }
+                                    if ($post['type'] == 'description' or $post['type'] == 'all'){
+                                        $product->description = $steal->description;
+                                        if($product->save()){
+                                            $data['success'] = true;
+                                            $data['text'] .= 'Описание продукта было успешно обновлено.';
+                                        }else{
+                                            $data['error'] = 'Не удалось обновить описание продукта.'.SetError::setErrorST($product,'',1);
+                                        }
+                                    }
+                                    if($post['type'] == 'accept'){
+                                        ProductToSteal::updateAll(['status'=>ProductToSteal::STATUS_ACCEPT],['id'=>$compare->id]);
+                                        ProductToSteal::updateAll(['status'=>ProductToSteal::STATUS_REJECTED],['id_product'=>$product->id,'status'=>ProductToSteal::STATUS_NO_SOLUTION]);
+                                        Steal::updateAll(['idProduct'=>$product->id],['offerId'=>$compare->id_steal]);
+                                        $data['success'] = true;
+                                        $data['data'] = ['color'=>'green','type'=>'one'];
+                                        $data['text'] = 'Соответствие между продуктами успешно назначено!';
+                                    }
+                                }else{
+                                    $data['error'] = 'Не удалось определить требуемое действие.';
+                                }
+                            }else{
+                                $data['error'] = 'Не удалось найти продукт или сравниваемый продукт.';
+                            }
+                        }else{
+                            $data['error'] = 'Не удалось найти сравнение по переданному идентификатору.';
+                        }
+                    }else{
+                        $data['error'] = 'Не удалось определить передаваемый идентификатор сравнения.';
                     }
                 }
             }else{
@@ -451,7 +516,6 @@ class AdminController extends Controller
                 $model->name = $post['Catalog']['name'];
                 $model->status = $post['Catalog']['status'];
                 $model->article = $article;
-                $model->save();
                 if($model->save()){
                     if(isset($post['Catalog']['id']))
                         Yii::$app->session->setFlash('success', 'Каталог "'.$model->name.'" успешно обновлен!');
@@ -472,7 +536,6 @@ class AdminController extends Controller
                         $cat->name = $val['name'];
                         $cat->status = $par_status===false?$val['status']:$par_status;
                         $cat->idParent = $parent;
-                        $cat->save();
                         if(!$cat->save()){
                             foreach ($cat->getErrors() as $err) {
                                 $error .= implode(';', $err) . '<br/>';
@@ -602,6 +665,21 @@ class AdminController extends Controller
 
         return $this->render('brands',['data'=>$data,'model'=>$model,'file'=>$file]);
     }
+
+    public function actionCompareProducts()
+    {
+        $query = ProductToSteal::find()
+            ->select(['id_product'])
+            ->where(['product_to_steal.status'=>ProductToSteal::STATUS_NO_SOLUTION])
+            ->distinct();
+
+        $countQuery = clone $query;
+        $pages = new Pagination(['totalCount' => $countQuery->count(), 'pageSize' => 1, 'forcePageParam' => false, 'pageSizeParam' => false]);
+        $data = $query->offset($pages->offset)->limit($pages->limit)->all();
+
+        return $this->render('compare-products',['compare'=>$data,'pages'=>$pages]);
+    }
+
     public function actionComments()
     {
         $comments = Comments::find()->orderBy(['created_at'=>SORT_DESC])->all();

@@ -70,9 +70,9 @@ class Wishlist extends \yii\db\ActiveRecord
     public function afterSave($insert,$changedAttributes)
     {
         if ($insert) {
-            ($t = new Log(['type' => Log::TYPE_WISHLIST,'action' => Log::ACTION_CREATE,'info' => json_encode((array)$this->attributes,JSON_UNESCAPED_UNICODE)]))->save();
+            ($t = new Log(['type_id' => $this->id,'type' => Log::TYPE_WISHLIST,'action' => Log::ACTION_CREATE,'info' => json_encode((array)$this->attributes,JSON_UNESCAPED_UNICODE)]))->save();
         } else {
-            (new Log(['type' => Log::TYPE_WISHLIST,'action' => Log::ACTION_UPDATE,'info' => json_encode((array)$this->attributes,JSON_UNESCAPED_UNICODE)]))->save();
+            (new Log(['type_id' => $this->id,'type' => Log::TYPE_WISHLIST,'action' => Log::ACTION_UPDATE,'info' => json_encode((array)$changedAttributes,JSON_UNESCAPED_UNICODE)]))->save();
         }
         parent::afterSave($insert, $changedAttributes);
     }

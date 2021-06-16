@@ -9,7 +9,9 @@ use app\models\Wishlist;
 use yii\bootstrap\ActiveForm;
 use yii\helpers\Url;
 
-$this->title = 'Pechirus: Продукт - '.$product->name;
+$brand_name = $product->getBrandName();
+
+$this->title = 'Купить в Москве '.$product->name.($brand_name?' от производителя '.$brand_name:'').' за '.$product->price .' руб.';
 $this->registerMetaTag(['name' => 'keywords', 'content' => 'ПечиРус, Pechirus, Печи, '.implode(',',explode(' ',$product->name))]);
 $this->registerMetaTag(['name' => 'description', 'content' => $product->name .','.$product->description.'Печи в Москве от надежных поставщиков по низким ценам с гарантией. Телефон для консультации +7 (495) 540-47-03. Печи, Котлы, Дымоходы и аксессуары для бани и сауны. Более 3-х тысяч товаров.']);
 $this->params['breadcrumbs'][] = $this->title;
@@ -85,7 +87,6 @@ $this->params['breadcrumbs'][] = $this->title;
                             <input class="cart-plus-minus-box" type="text" name="count" value="1">
                         </div>
                     </div>
-                    <?php $brand_name = $product->getBrandName()?>
                     <div class="product-details-meta">
                         <ul>
                             <li><span>Артикул:</span> <a href="#"><?= $product->article ?></a></li>
@@ -130,7 +131,7 @@ $this->params['breadcrumbs'][] = $this->title;
         <div class="row">
             <div class="col-lg-12">
                 <div class="dec-review-topbar nav mb-65">
-                    <a  data-toggle="tab" href="#des-details1">Опиание</a>
+                    <a  data-toggle="tab" href="#des-details1">Опиcание</a>
                     <a data-toggle="tab" href="#des-details2">Характеристики</a>
                     <a class="active" data-toggle="tab" href="#des-details3">Отзывы и рейтинг</a>
                 </div>
