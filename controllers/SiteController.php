@@ -207,9 +207,11 @@ class SiteController extends Controller
         }
         if(Yii::$app->request->isGet){
             $get = Yii::$app->request->get();
-            $product = Product::find()->where(['id'=>$get['id']])->with(['comments'])->one();
-            if(isset($product->id))
-                return $this->render('product',['product'=>$product,'comment'=>$comment]);
+            if(isset($get['id'])){
+                $product = Product::find()->where(['id'=>$get['id']])->with(['comments'])->one();
+                if(isset($product->id))
+                    return $this->render('product',['product'=>$product,'comment'=>$comment]);
+            }
         }
 
         return $this->render('error', ['name'=>'Продукт не найден','exception' => 404,'message'=>'Не удалось найти продукт с данным идентификатором']);
