@@ -44,14 +44,14 @@ class AdminController extends Controller
                 'only' => ['basket','brands','catalogs','comments','contact','index',
                     'notifications','orders','orders-details','shipments','user-edit','users','products',
                     'product','provider','upload','multiupload','product-fast-edit','functions','massupload',
-                    'compare-products'
+                    'compare-products','steal-dashboard'
                 ],
                 'rules' => [
                     [
                         'actions' => ['basket','brands','catalogs','comments','contact','index',
                             'notifications','orders','orders-details','shipments','user-edit','users','products',
                             'product','provider','upload','multiupload','product-fast-edit','functions','massupload',
-                            'compare-products'
+                            'compare-products','steal-dashboard'
                         ],
                         'allow' => true,
                         'roles' => ['admin'],
@@ -678,6 +678,18 @@ class AdminController extends Controller
         $data = $query->offset($pages->offset)->limit($pages->limit)->all();
 
         return $this->render('compare-products',['compare'=>$data,'pages'=>$pages]);
+    }
+
+    public function actionStealDashboard()
+    {
+        $data = ['top'=>[],'chart'=>[]];
+        $data['top']['count-steal'] = Steal::find()->count();
+        $data['top']['count-compare'] = Steal::find()->where(['not',['idProduct'=>null]])->count();
+        $data['top']['count-site'] = Steal::find()->select(['siteName'])->distinct()->count();
+        $data['top']['count-site-target'] = 10;
+        $data['top']['steal-price-avg'] = Steal::find()->select(['price'])->where(['not',['idProduct'=>null]])->average('price');
+        $data['top']['my-price-avg'] = Product::find()->select(['price'])->where(['in','id',Steal::comparesProductId()])->average('price');
+        return $this->render('steal-dashboard',['data'=>$data]);
     }
 
     public function actionComments()

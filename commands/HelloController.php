@@ -161,4 +161,23 @@ class HelloController extends Controller
         print_r(json_encode(json_decode($response,true),JSON_UNESCAPED_UNICODE));
     }
 
+    public function actionTestCompare(){
+        $products = Product::find()->all();
+        foreach ($products as $product){
+            $json = json_decode($product->property,true);
+            if(isset($json['myrows'])){
+                foreach ($json['myrows'] as $index=>$row){
+                    if(!isset($row['name'])){
+                        unset($json['myrows'][$index]);
+                        $trig = 1;
+                    }
+                }
+                if(isset($trig)){
+                    $product->property = json_encode($json,JSON_UNESCAPED_UNICODE);
+                    $product->save();
+                    var_dump($product->id);
+                }
+            }
+        }
+    }
 }

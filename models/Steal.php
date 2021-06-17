@@ -70,4 +70,9 @@ class Steal extends \yii\db\ActiveRecord
             'name' => 'Наименование',
         ];
     }
+
+    public static function comparesProductId(){
+        $ids = static::find()->where(['not',['idProduct'=>null]])->asArray()->all();
+        return array_column($ids,'idProduct');
+    }
 }

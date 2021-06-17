@@ -82,7 +82,7 @@ if(isset($get['catalog'])){
                                                 <?= $index?'<li class="back"><button data-catalog-back="'.$index.'"><i class="icofont-arrow-left"></i>Назад</button></li>':'' ?>
                                                 <?php foreach ($group as $article=>$name):?>
                                                     <li data-catalog-article="<?= $article ?>" class="<?= isset($get['catalog'])?($catalogs[array_search($get['catalog'],array_column((array)$catalogs,'id'))]['article'] == $article?'active':''):'' ?>">
-                                                        <a href="<?= Url::current(['catalog'=>$catalogs[array_search($article,array_column((array)$catalogs,'article'))]['id']])?>"><?= $name ?></a><?= isset($new_catalog[$article])?'<button data-catalog-article-open="'.$article.'"><i class="icofont-arrow-right"></i></button>':'' ?>
+                                                        <a href="<?= Url::toRoute(['site/list','catalog'=>$catalogs[array_search($article,array_column((array)$catalogs,'article'))]['id']])?>"><?= $name ?></a><?= isset($new_catalog[$article])?'<button data-catalog-article-open="'.$article.'"><i class="icofont-arrow-right"></i></button>':'' ?>
                                                     </li>
                                                 <?php endforeach; ?>
                                             </ul>
@@ -278,7 +278,7 @@ if(isset($get['catalog'])){
                             <ul>
                                 <?php //isset($subcategories[0]->idParent)?"<li><a href=". Url::current(['catalog'=>(Catalog::find()->where(['article'=>$subcategories[0]->idParent])->one())->id]) .">Назад</a></li>":""?>
                                 <?php foreach ($subcategories as $category):?>
-                                <li><a class="<?= (isset($get['catalog']) and $get['catalog'] == $category->id)?"active":"" ?>" href="<?= Url::current(['catalog'=>$category->id]) ?>"><?= $category->name ?></a></li>
+                                <li><a class="<?= (isset($get['catalog']) and $get['catalog'] == $category->id)?"active":"" ?>" href="<?= Url::toRoute(['site/list','catalog'=>$category->id]) ?>"><?= $category->name ?></a></li>
                                 <?php endforeach; ?>
                             </ul>
                         </div>
