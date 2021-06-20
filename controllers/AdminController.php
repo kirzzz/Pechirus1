@@ -44,14 +44,14 @@ class AdminController extends Controller
                 'only' => ['basket','brands','catalogs','comments','contact','index',
                     'notifications','orders','orders-details','shipments','user-edit','users','products',
                     'product','provider','upload','multiupload','product-fast-edit','functions','massupload',
-                    'compare-products','steal-dashboard'
+                    'compare-products','steal-dashboard','steal-product'
                 ],
                 'rules' => [
                     [
                         'actions' => ['basket','brands','catalogs','comments','contact','index',
                             'notifications','orders','orders-details','shipments','user-edit','users','products',
                             'product','provider','upload','multiupload','product-fast-edit','functions','massupload',
-                            'compare-products','steal-dashboard'
+                            'compare-products','steal-dashboard','steal-product'
                         ],
                         'allow' => true,
                         'roles' => ['admin'],
@@ -690,6 +690,24 @@ class AdminController extends Controller
         $data['top']['steal-price-avg'] = Steal::find()->select(['price'])->where(['not',['idProduct'=>null]])->average('price');
         $data['top']['my-price-avg'] = Product::find()->select(['price'])->where(['in','id',Steal::comparesProductId()])->average('price');
         return $this->render('steal-dashboard',['data'=>$data]);
+    }
+
+    public function actionStealProduct()
+    {
+        $query = Steal::find()->where(['idProduct'=>null])->andWhere('JSON_CONTAINS(parameters,\'{"value" : "ВЕЗУВИЙ"}\',\'$\')');
+
+        $countQuery = clone $query;
+        $pages = new Pagination(['totalCount' => $countQuery->count(), 'pageSize' => 1, 'forcePageParam' => false, 'pageSizeParam' => false]);
+        $steal = $query->offset($pages->offset)->limit($pages->limit)->one();
+
+        if(Yii::$app->request->isPost){
+            $post = Yii::$app->request->post();
+            if(isset($post['id'])){
+
+            }
+        }
+
+        return $this->render('steal-product',['steal'=>$steal,'pages'=>$pages]);
     }
 
     public function actionComments()
