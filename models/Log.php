@@ -29,10 +29,12 @@ class Log extends \yii\db\ActiveRecord
     CONST TYPE_USER = 'User';
     CONST TYPE_COMPARE= 'Compare';
     CONST TYPE_WISHLIST= 'Wishlist';
+    CONST TYPE_ERROR= 'ERROR';
 
     CONST ACTION_CREATE = 'create';
     CONST ACTION_UPDATE = 'update';
     CONST ACTION_DELETE = 'delete';
+    CONST ACTION_ERROR = 'error';
 
     const TYPE_DESCRIPTION =[
         self::TYPE_BASKET => 'Корзина',
@@ -44,13 +46,15 @@ class Log extends \yii\db\ActiveRecord
         self::TYPE_PRODUCT => 'Продукт',
         self::TYPE_USER => 'Пользователь',
         self::TYPE_COMPARE => 'Сравнение',
-        self::TYPE_WISHLIST => 'Понравившиеся'
+        self::TYPE_WISHLIST => 'Понравившиеся',
+        self::TYPE_ERROR => 'Error'
     ];
 
     const ACTION_DESCRIPTION =[
         self::ACTION_CREATE => 'Создан новый',
         self::ACTION_UPDATE => 'Обновлен',
         self::ACTION_DELETE => 'Удален',
+        self::ACTION_ERROR => 'Ошибка',
     ];
 
     /**

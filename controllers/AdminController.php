@@ -7,6 +7,7 @@ use app\models\Brand;
 use app\models\Catalog;
 use app\models\Comments;
 use app\models\Contact;
+use app\models\CopyProduct;
 use app\models\Log;
 use app\models\MultiUnload;
 use app\models\MultiUpload;
@@ -276,7 +277,8 @@ class AdminController extends Controller
                     ['like','price',$get['data']],
                     ['like','description',$get['data']],
                     ['like','property',$get['data']],
-                    ['like','count',$get['data']]
+                    ['like','count',$get['data']],
+                    ['like','article',$get['data']]
                 ];
                 $query->andWhere($condition);
             }
@@ -694,20 +696,44 @@ class AdminController extends Controller
 
     public function actionStealProduct()
     {
-        $query = Steal::find()->where(['idProduct'=>null])->andWhere('JSON_CONTAINS(parameters,\'{"value" : "ВЕЗУВИЙ"}\',\'$\')');
+        $model = new CopyProduct();
+
+        if(Yii::$app->request->isPost){
+            $post = Yii::$app->request->post();
+            if($model->load($post) and isset($model->steal_id)){
+                if(isset($post['copy'])){
+                    if($model->validate() and ($id = $model->addProduct())){
+                        Yii::$app->session->setFlash('success','Продукт успешно скопирован в наш каталог!<br><a href="'.Url::toRoute(['site/product','id'=>$id]).'">Страница продукта</a>');
+                    }else{
+                        SetError::setErrorST($model,'#1003: Непредвиденная ошибка! Пожалуйста, свяжитесь с администратором сайта! <br> Запомните код ошибки в начале сообщения!');
+                    }
+                }elseif (isset($post['remove'])){
+                    Steal::updateAll(['idProduct'=>-1],['id'=>$model->steal_id]);
+                }else{
+                    Yii::$app->session->setFlash('error','#1002: Непредвиденная ошибка! Пожалуйста, свяжитесь с администратором сайта! <br> Запомните код ошибки в начале сообщения!');
+                }
+
+            }else{
+                Yii::$app->session->setFlash('error','#1001: Непредвиденная ошибка! Пожалуйста, свяжитесь с администратором сайта! <br> Запомните код ошибки в начале сообщения!');
+            }
+            $model = new CopyProduct();
+        }
+
+        $brand = "ВЕЗУВИЙ";
+        $query = Steal::find()->where(['idProduct'=>null])->andWhere('JSON_CONTAINS(parameters,\'{"value" : "'.$brand.'"}\',\'$\')');
 
         $countQuery = clone $query;
         $pages = new Pagination(['totalCount' => $countQuery->count(), 'pageSize' => 1, 'forcePageParam' => false, 'pageSizeParam' => false]);
         $steal = $query->offset($pages->offset)->limit($pages->limit)->one();
 
-        if(Yii::$app->request->isPost){
-            $post = Yii::$app->request->post();
-            if(isset($post['id'])){
+        $model->steal_id = $steal->id;
+        $model->id_brand = (Brand::find()->where("lower(name) like lower('%".$brand."%')")->one())->id;
+        $model->price = $steal->price;
+        $model->in_stock = true;
+        $model->hidden = true;
+        $model->id_catalog = '';
 
-            }
-        }
-
-        return $this->render('steal-product',['steal'=>$steal,'pages'=>$pages]);
+        return $this->render('steal-product',['steal'=>$steal,'pages'=>$pages,'model'=>$model]);
     }
 
     public function actionComments()

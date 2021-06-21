@@ -42,12 +42,13 @@ class CopyProduct extends Model
     public function addProductImage($url,$article){
         $contents = file_get_contents($url);
         if($contents !== false) {
-            if(mkdir(Yii::$app->basePath.'/web/images/'.$article.'/')){
+            if(is_dir(Yii::$app->basePath.'/web/images/'.$article.'/') or mkdir(Yii::$app->basePath.'/web/images/'.$article.'/',0700)){
                 $name = Yii::$app->basePath.'/web/images/'.$article.'/'. basename($url);
                 file_put_contents($name, $contents);
                 return ['name'=>basename($url),'path'=>'images/'.$article.'/'. basename($url),'size'=>filesize($name)];
             }
         }
+        (new Log(['type_id' => $article,'type' => Log::TYPE_ERROR,'action' => Log::ACTION_ERROR, 'info' => json_encode(['model'=>'CopyProduct','function'=>'addProductImage','url'=>$url,'article'=>$article,'save'=>false],JSON_UNESCAPED_UNICODE)]))->save();
         return false;
     }
 
@@ -55,7 +56,7 @@ class CopyProduct extends Model
         $steal = Steal::find()->where(['id'=>$this->steal_id])->one();
         $product = new Product();
         $article = (new \yii\db\Query())->from('product')->max('article') + 1;
-        $product->article = $article;
+        $product->article = (string)$article;
         $product->idCatalog = $this->id_catalog;
         $product->idBrand = $this->id_brand;
         $product->name = $steal->name;
@@ -81,10 +82,14 @@ class CopyProduct extends Model
                 }
             }
         }
+        $product->img = json_encode($product_imgs,JSON_UNESCAPED_UNICODE);
         if($product->save()){
+            $steal->idProduct = $product->id;
+            $steal->save();
             return $product->id;
+        }else{
+            (new Log(['type_id' => $steal->id,'type' => Log::TYPE_ERROR,'action' => Log::ACTION_ERROR, 'info' => json_encode(['model'=>'CopyProduct','function'=>'addProduct','error'=>$product->getErrorSummary(true)],JSON_UNESCAPED_UNICODE)]))->save();
         }
-        SetError::setErrorST($product,'');
         return false;
     }
 }
