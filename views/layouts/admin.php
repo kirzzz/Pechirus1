@@ -561,6 +561,12 @@ AdminAsset::register($this);
                             <span>Назначение соответствий</span>
                         </a>
                     </li>
+                    <li>
+                        <a href="<?= Url::toRoute(['admin/compare-products'])?>">
+                            <i class="fas fa-copy"></i>
+                            <span>Заимтвование продуктов</span>
+                        </a>
+                    </li>
 
                     <li class="menu-title mt-2">Заказы</li>
                     <li>
