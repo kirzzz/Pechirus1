@@ -116,7 +116,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <div class="form-group mb-3">
                 <label>Изображения</label>
                 <?php
-                $url = isset($model->img)?(explode('/',json_decode($model->img,true)[0]['path'])[1]):Yii::$app->security->generateRandomString();
+                $url = $model->article;
                 echo \kato\DropZone::widget(['uploadUrl' =>Url::to(['admin/upload', 'id' => $url]),
                     'options' => [
                         'paramName'=>'imageFile',

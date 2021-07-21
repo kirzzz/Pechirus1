@@ -33,7 +33,7 @@ class MultiUnload extends Model
                 $catalogs = $this->idCatalog;
                 if ($this->child)
                     $catalogs = Catalog::getTreeDown($this->idCatalog);
-                $products = Product::find()->where(['in','idCatalog',$catalogs])->all();
+                $products = Product::find()->andWhere(['in','idCatalog',$catalogs])->all();
             }else{
                 $products = Product::find()->all();
             }

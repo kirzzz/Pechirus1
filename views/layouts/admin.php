@@ -562,7 +562,7 @@ AdminAsset::register($this);
                         </a>
                     </li>
                     <li>
-                        <a href="<?= Url::toRoute(['admin/compare-products'])?>">
+                        <a href="<?= Url::toRoute(['admin/steal-product'])?>">
                             <i class="fas fa-copy"></i>
                             <span>Заимтвование продуктов</span>
                         </a>
@@ -624,6 +624,12 @@ AdminAsset::register($this);
                         <a href="<?= Url::toRoute(['admin/massupload'])?>">
                             <i class="fal fa-file"></i>
                             <span>Массовая загрузка</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= Url::toRoute(['admin/test-functions'])?>">
+                            <i class="fal fa-vial"></i>
+                            <span>Тестирование функций</span>
                         </a>
                     </li>
                 </ul>

@@ -179,7 +179,7 @@ class Orders extends \yii\db\ActiveRecord
             $this->status = self::STATUS_CONSIDERATION;
             $total_price = 0;
             if(!empty($basket)){
-                $products = Product::find()->where(['in','id',array_column($basket,'idProduct')])->all();
+                $products = Product::find()->andWhere(['in','id',array_column($basket,'idProduct')])->all();
                 foreach ($basket as $back){
                     $total_price += $back['count'] * $products[array_search($back['idProduct'],array_column($products,'id'))]['price'];
                 }
@@ -191,7 +191,7 @@ class Orders extends \yii\db\ActiveRecord
             }
             $product_info = Basket::find()->where(['idUser'=>Yii::$app->user->id])->andWhere(['status'=>Basket::STATUS_ADD])->asArray()->all();
             foreach ($product_info as $index=>$info){
-                $price = Product::find()->select('price,new_price')->where(['id'=>$info['idProduct']])->one();
+                $price = Product::find()->select('price,new_price')->andWhere(['id'=>$info['idProduct']])->one();
                 $product_info[$index]['price'] = $price->new_price?$price->new_price:$price->price;
                 $product_info[$index]['discount'] = $price->new_price?1:0;
             }

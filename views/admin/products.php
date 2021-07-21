@@ -113,7 +113,7 @@ $new_catalog = \yii\helpers\ArrayHelper::map((array)$data_catalog,'article','nam
             <div class="card-box product-box">
                 <div class="product-action">
                     <a href="<?= Url::to(['admin/product','id'=>$product->id]) ?>" class="btn btn-success btn-xs waves-effect waves-light"><i class="mdi mdi-pencil"></i></a>
-                    <a href="javascript: void(0);" class="btn btn-danger btn-xs waves-effect waves-light"><i class="mdi mdi-close"></i></a><!-- TODO: Сделать удаление продукта с подверждением об удалении -->
+                    <a href="javascript: void(0);" data-admin-functions="delete-product" data-steal-compare-id="<?= $product->id ?>" class="btn btn-danger btn-xs waves-effect waves-light"><i class="mdi mdi-close"></i></a>
                 </div>
                 <div class="bg-light">
                     <img style="width: 100%;object-fit: contain; height: 230px" src="/<?= $product->img !== '[]'?json_decode($product->img,true)[0]['path']:'images/default/no-image.png'?>" alt="product-pic" class="img-fluid" />
@@ -150,6 +150,7 @@ $new_catalog = \yii\helpers\ArrayHelper::map((array)$data_catalog,'article','nam
                                 </span>
                             </h5>
                             <h5 class="mb-1 sp-line-1"><span class="text-muted">Каталог: <?= $product->getCatalogName() ?></span></h5>
+                            <h5 class="mb-1 sp-line-1"><span class="text-success"><?= $product->article ?></span></h5>
                         </div>
                         <div class="col-auto">
                             <div class="product-price-tag">

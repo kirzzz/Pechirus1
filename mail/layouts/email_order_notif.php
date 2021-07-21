@@ -746,7 +746,7 @@ use yii\web\View;
             </div>
             <?php $price = 0;$products = json_decode($order->productInfo,true);?>
             <?php foreach ( $products as $product):?>
-                <?php $product_m = \app\models\Product::find()->where(['id'=>$product['idProduct']])->one() ?>
+                <?php $product_m = \app\models\Product::find()->andWhere(['id'=>$product['idProduct']])->one() ?>
                 <?php $price += $product['count']*$product['price'] ?>
             <div style="background-color:transparent;">
                 <div class="block-grid three-up" style="min-width: 320px; max-width: 500px; overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; Margin: 0 auto; background-color: transparent;">

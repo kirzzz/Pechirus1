@@ -92,7 +92,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                                     </tr>
                                                     <?php $products = json_decode($order->productInfo,true); ?>
                                                     <?php foreach ($products as $product):?>
-                                                    <?php $product_m = \app\models\Product::find()->where(['id'=>$product['idProduct']])->one() ?>
+                                                    <?php $product_m = \app\models\Product::find()->andWhere(['id'=>$product['idProduct']])->one() ?>
                                                     <?php $image = $product_m->img !== '[]'?json_decode($product_m->img,true)[0]['path']:'images/default/no-image.png'?>
                                                     <tr style="display: none" data-order-show-product="<?= $order->id ?>">
                                                         <td class="cart-product" colspan="5">

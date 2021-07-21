@@ -347,7 +347,7 @@ use yii\web\View;
                                     <table border='0' cellpadding='0' cellspacing='0' style='cellpadding:0;cellspacing:0;color:#000000;font-family:Helvetica, Arial, sans-serif;font-size:13px;line-height:22px;table-layout:auto;width:100%;' width='100%'>
                                             <?php $products = json_decode($order->productInfo,true);
                                                 foreach ($products as $product):
-                                                    $product_info = \app\models\Product::find()->where(['id'=>$product['idProduct']])->one()?>
+                                                    $product_info = \app\models\Product::find()->andWhere(['id'=>$product['idProduct']])->one()?>
                                                     <tr style="font-size:14px; line-height:19px; font-family: 'Oxygen', 'Helvetica Neue', helvetica, sans-serif; color:#777777">
                                                         <td style="text-align:left; font-size:14px; line-height:19px; font-family: ' oxygen', 'helvetica neue', helvetica, sans-serif; color: #777777;">
                                                             <a href="<?= Url::toRoute(['site/product','id'=> $product_info->id],true) ?>" target="_blank">

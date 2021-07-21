@@ -208,7 +208,7 @@ AppAsset::register($this);
                     if(!Yii::$app->user->isGuest){
                         $basket = Basket::find()->where(['idUser'=>Yii::$app->user->id])->andWhere(['status'=>Basket::STATUS_ADD])->all();
                         if(!empty($basket)){
-                            $products = Product::find()->where(['in','id',array_column($basket,'idProduct')])->all();
+                            $products = Product::find()->andWhere(['in','id',array_column($basket,'idProduct')])->all();
                         }
                     }else{
                         $session = Yii::$app->session;
@@ -220,7 +220,7 @@ AppAsset::register($this);
                         else
                             $basket = $session->get('basket');
                         if(!empty($basket)){
-                            $products = Product::find()->where(['in','id',array_column($basket,'idProduct')])->all();
+                            $products = Product::find()->andWhere(['in','id',array_column($basket,'idProduct')])->all();
                         }
                     }
                     $price = 0;

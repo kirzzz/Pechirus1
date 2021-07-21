@@ -180,4 +180,9 @@ class HelloController extends Controller
             }
         }
     }
+
+    public function actionTestModelsQuery(){
+        $q = Product::find()->andWhere(['id'=>49210])->select('name')->one();
+        print_r($q);
+    }
 }

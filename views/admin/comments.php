@@ -50,7 +50,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             <tbody>
                             <?php foreach ($comments as $comment): ?>
                                 <?php $user = \app\models\User::find()->where(['id'=>$comment->idUser])->one();?>
-                                <?php $product = \app\models\Product::find()->where(['id'=>$comment->idProduct])->one();?>
+                                <?php $product = \app\models\Product::find()->andWhere(['id'=>$comment->idProduct])->one();?>
                                 <?php $image = $product->img !== '[]'?json_decode($product->img,true)[0]['path']:'images/default/no-image.png' ?>
                                 <tr>
                                     <td><?= $comment->id ?></td>

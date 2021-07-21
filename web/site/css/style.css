@@ -19993,18 +19993,18 @@ textarea:focus {
   color: #777777;
   margin: 0 0 10px;
 }
-.product-details-content .pro-details-size .pro-details-size-content ul {
+.product-details-content .pro-details-size .pro-details-size-content ul,ul.custom-row-ul {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
 }
-.product-details-content .pro-details-size .pro-details-size-content ul li {
+.product-details-content .pro-details-size .pro-details-size-content ul li,ul.custom-row-ul li {
   margin-right: 5px;
 }
-.product-details-content .pro-details-size .pro-details-size-content ul li:last-child {
+.product-details-content .pro-details-size .pro-details-size-content ul li:last-child,ul.custom-row-ul li:last-child {
   margin-right: 0;
 }
-.product-details-content .pro-details-size .pro-details-size-content ul li a {
+.product-details-content .pro-details-size .pro-details-size-content ul li a,ul.custom-row-ul li a {
   display: inline-block;
   font-size: 12px;
   color: #828495;
@@ -20015,7 +20015,7 @@ textarea:focus {
   text-align: center;
   line-height: 29px;
 }
-.product-details-content .pro-details-size .pro-details-size-content ul li a:hover {
+.product-details-content .pro-details-size .pro-details-size-content ul li a:hover,ul.custom-row-ul li a:hover {
   background-color: #333333;
   color: #ffffff;
   border: 1px solid #333333;

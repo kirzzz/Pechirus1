@@ -42,7 +42,7 @@ class SiteController extends Controller
                     'about-us','calculator','contact','index','list','login',
                     'logout','password-reset','password-confirm','product','stock',
                     'error','payment-and-delivery','basket-mini','basket-mini-remove','basket','order','order-complete','user','confirm'
-                    ,'order-remove','order-tracking', 'compare','wishlist'],
+                    ,'order-remove','order-tracking', 'compare','wishlist','chimney'],
                 'rules' => [
                     [
                         'actions' => [
@@ -56,6 +56,10 @@ class SiteController extends Controller
                         'actions' => ['user','order-remove'],
                         'allow' => true,
                         'roles' => ['user','admin'],
+                    ],[
+                        'actions' => ['chimney'],
+                        'allow' => true,
+                        'roles' => ['admin']
                     ]
                 ],
             ],
@@ -155,8 +159,8 @@ class SiteController extends Controller
 
     public function actionList()
     {
-        $catalogs = Catalog::find()->where(['status'=>Catalog::STATUS_ACTIVE])->asArray()->all();//TODO Доделать вывод популярных товаров
-        $products = Product::find()->where(['>','product.id','0'])->andWhere(['hidden'=>0]);
+        $catalogs = Catalog::find()->where(['status'=>Catalog::STATUS_ACTIVE])->orderBy(['name'=>SORT_ASC])->asArray()->all();//TODO Доделать вывод популярных товаров
+        $products = Product::find()->andWhere(['>','product.id','0'])->andWhere(['hidden'=>0]);
         if(Yii::$app->request->isGet){
             $get = Yii::$app->request->get();
             if(isset($get['main-data']) or isset($get['data'])){
@@ -168,7 +172,19 @@ class SiteController extends Controller
                     ['like','product.article',$get['main-data']],
                     ['like','catalog.name',$get['main-data']],
                 ];
-                $products = $products->joinWith('catalog')->andWhere($condition);
+                if(Product::find()->andWhere(['>','product.id','0'])->andWhere(['hidden'=>0])->joinWith('catalog')->andWhere($condition)->count() == 0){
+                    $temp = Product::find()->andWhere(['hidden'=>0])->all();
+                    $ids = [];
+                    foreach (array_column($temp,'name') as $index=>$product_name){
+                        similar_text($get['main-data'], $product_name, $perc);
+                        if($perc > 50){
+                            $ids[] = $temp[$index]['id'];
+                        }
+                    }
+                    $products = $products->joinWith('catalog')->andWhere(['in','product.id',$ids]);
+                }else{
+                    $products = $products->joinWith('catalog')->andWhere($condition);
+                }
             }
             if(isset($get['catalog'])){
                 $catalog_find = Catalog::find()->where(['id'=>$get['catalog']])->andWhere(['status'=>Catalog::STATUS_ACTIVE])->one();
@@ -184,7 +200,7 @@ class SiteController extends Controller
                 $products = $products->orderBy(['price'=>$get['price']=='ASC'?SORT_ASC:SORT_DESC]);
             }
         }else{
-            $products = Product::find()->where(['hidden'=>0])->andWhere(['in_stock'=>1])->joinWith('stat')->orderBy(['yandex_product_stat.clicks'=>SORT_DESC]);
+            $products = Product::find()->andWhere(['hidden'=>0])->andWhere(['in_stock'=>1])->joinWith('stat')->orderBy(['yandex_product_stat.clicks'=>SORT_DESC]);
         }
         $brands = Brand::find()->all();
         $countQuery = clone $products;
@@ -208,7 +224,7 @@ class SiteController extends Controller
         if(Yii::$app->request->isGet){
             $get = Yii::$app->request->get();
             if(isset($get['id'])){
-                $product = Product::find()->where(['id'=>$get['id']])->with(['comments'])->one();
+                $product = Product::find()->andWhere(['id'=>$get['id']])->with(['comments'])->one();
                 if(isset($product->id))
                     return $this->render('product',['product'=>$product,'comment'=>$comment]);
             }
@@ -232,7 +248,7 @@ class SiteController extends Controller
                 $data = $session->get('compare');
         }
         if(!empty($data)){
-            $products = Product::find()->where(['in','id',array_column($data,'idProduct')])->all();
+            $products = Product::find()->andWhere(['in','id',array_column($data,'idProduct')])->all();
         }
         return $this->render('compare',['data'=>$data,'products'=>$products]);
     }
@@ -252,7 +268,7 @@ class SiteController extends Controller
                 $data = $session->get('wishlist');
         }
         if(!empty($data)){
-            $products = Product::find()->where(['in','id',array_column($data,'idProduct')])->all();
+            $products = Product::find()->andWhere(['in','id',array_column($data,'idProduct')])->all();
         }
         return $this->render('wishlist',['products'=>$products]);
     }
@@ -301,7 +317,7 @@ class SiteController extends Controller
         if(!Yii::$app->user->isGuest){
             $basket = Basket::find()->where(['idUser'=>Yii::$app->user->id])->andWhere(['status'=>Basket::STATUS_ADD])->all();
             if(!empty($basket)){
-                $products = Product::find()->where(['in','id',array_column($basket,'idProduct')])->all();
+                $products = Product::find()->andWhere(['in','id',array_column($basket,'idProduct')])->all();
             }
         }else{
             $session = Yii::$app->session;
@@ -312,7 +328,7 @@ class SiteController extends Controller
             else
                 $basket = $session->get('basket');
             if(!empty($basket)){
-                $products = Product::find()->where(['in','id',array_column($basket,'idProduct')])->all();
+                $products = Product::find()->andWhere(['in','id',array_column($basket,'idProduct')])->all();
             }
         }
         return $this->render('basket',['products'=>$products,'basket'=>$basket]);
@@ -420,7 +436,7 @@ class SiteController extends Controller
                 $basket = $session->get('basket');
         }
         if(!empty($basket)){
-            $products = Product::find()->where(['in','id',array_column($basket,'idProduct')])->all();
+            $products = Product::find()->andWhere(['in','id',array_column($basket,'idProduct')])->all();
             foreach ($basket as $back){
                 $total_price += $back['count'] * $products[array_search($back['idProduct'],array_column($products,'id'))]['price'];
             }
@@ -485,7 +501,7 @@ class SiteController extends Controller
         if(Yii::$app->request->isPost){
             $data = ['success'=>false];
             $post = Yii::$app->request->post();
-            $product = Product::find()->where(['id'=>$post['id']])->one();
+            $product = Product::find()->andWhere(['id'=>$post['id']])->one();
             if(isset($product['id']) and isset($post['type'])){
                 if(!Yii::$app->user->isGuest){
                     if($post['type'] == 'basket')
@@ -551,7 +567,7 @@ class SiteController extends Controller
                     }
                 }
                 if($post['type'] == 'basket'){
-                    $product = Product::find()->where(['id'=>$post['id']])->one();
+                    $product = Product::find()->andWhere(['id'=>$post['id']])->one();
                     $data['price'] = ($product->new_price?$product->new_price:$product->price);
                     $data['product'] = ['data'=>$product->toArray(['article','price','name']),'brand'=>$product->getBrandName(),'category'=>$product->getCatalogName()];
                 }
@@ -660,6 +676,11 @@ class SiteController extends Controller
             }
         }
         return $this->render('confirm',['success'=>false]);
+    }
+
+    public function actionChimney()
+    {
+        return $this->render('chimney');
     }
 
 

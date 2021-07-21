@@ -55,6 +55,14 @@ AppAsset::register($this);
     </script>
     <noscript><div><img src="https://mc.yandex.ru/watch/31050401" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
     <!-- /Yandex.Metrika counter -->
+    <!--LiveInternet counter--><script>
+        new Image().src = "https://counter.yadro.ru/hit?r"+
+            escape(document.referrer)+((typeof(screen)=="undefined")?"":
+                ";s"+screen.width+"*"+screen.height+"*"+(screen.colorDepth?
+                screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
+            ";h"+escape(document.title.substring(0,150))+
+            ";"+Math.random();</script><!--/LiveInternet-->
+
     <div class="main-wrapper main-wrapper-3">
         <header class="header-area section-padding-1 transparent-bar">
             <div class="header-large-device">
@@ -252,7 +260,7 @@ AppAsset::register($this);
                         if(!Yii::$app->user->isGuest){
                             $basket = Basket::find()->where(['idUser'=>Yii::$app->user->id])->andWhere(['status'=>Basket::STATUS_ADD])->all();
                             if(!empty($basket)){
-                                $products = Product::find()->where(['in','id',array_column($basket,'idProduct')])->all();
+                                $products = Product::find()->andWhere(['in','id',array_column($basket,'idProduct')])->all();
                             }
                         }else{
                             $session = Yii::$app->session;
@@ -264,7 +272,7 @@ AppAsset::register($this);
                             else
                                 $basket = $session->get('basket');
                             if(!empty($basket)){
-                                $products = Product::find()->where(['in','id',array_column($basket,'idProduct')])->all();
+                                $products = Product::find()->andWhere(['in','id',array_column($basket,'idProduct')])->all();
                             }
                         }
                         $price = 0;
@@ -326,10 +334,11 @@ AppAsset::register($this);
                                     </div>
                                 </div>
                             </li>
-                            <li><i class="icofont-clock-time"></i>Пн-Пт с 10:00 до 18:00 Сб-Вс с 10:00 до 15:00</li>
-                            <li><i class="icofont-envelope"></i>pechirus@gmail.com, info@pechirus.ru</li>
-                            <li><i class="icofont-stock-mobile"></i>+7 (495) 540-47-03</li>
                             <li><i class="icofont-home"></i>МКАД 92км, Мытищи ул. Красный поселок, д.2a, ТЦ Садовод Линия Е, павильоны №47-48</li>
+                            <li><i class="icofont-clock-time"></i>Пн-Пт с 10:00 до 18:00 Сб-Вс с 10:00 до 15:00</li>
+                            <li><i class="icofont-envelope"></i><a href="mailto:pechirus@gmail.com">pechirus@gmail.com</a></li>
+                            <li><i class="icofont-envelope"></i><a href="mailto:info@pechirus.ru">info@pechirus.ru</a></li>
+                            <li><i class="icofont-stock-mobile"></i><a href="tel:84955404703">+7 (495) 540-47-03</a></li>
                         </ul>
                     </div>
                 </div>
@@ -409,8 +418,10 @@ AppAsset::register($this);
                                 <h3 class="footer-title-2">Связаться с нами</h3>
                                 <div class="footer-connect">
                                     <p>МКАД 92км, Мытищи ул. Красный поселок, д.2a, ТЦ Садовод Линия Е, павильоны №47-48</p>
-                                    <a href="javascript:void(0)">pechirus@gmail.com,  info@pechirus.ru</a>
-                                    <a href="javascript:void(0)">+7 (495) 540-47-03</a>
+                                    <p>Пн-Пт с 10:00 до 18:00 Сб-Вс с 10:00 до 15:00</p>
+                                    <a href="mailto:pechirus@gmail.com">pechirus@gmail.com</a>
+                                    <a href="mailto:info@pechirus.ru">info@pechirus.ru</a>
+                                    <a href="tel:84955404703">+7 (495) 540-47-03</a>
                                 </div>
                             </div>
                         </div>

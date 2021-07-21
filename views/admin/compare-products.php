@@ -33,7 +33,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 <table class="table">
                     <?php foreach ($compare as $index => $comp):?>
                         <?php
-                        $product = Product::find()->where(['id'=>$comp->id_product])->one();
+                        $product = Product::find()->andWhere(['id'=>$comp->id_product])->one();
                         $steals = ProductToSteal::find()
                             ->where(['id_product'=>$comp->id_product])
                             ->andWhere(['status'=>ProductToSteal::STATUS_NO_SOLUTION])

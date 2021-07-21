@@ -263,7 +263,7 @@ if(isset($get['catalog'])){
                     $subcategories = Catalog::find()->where(['status'=> Catalog::STATUS_ACTIVE]);
                     if(isset($get['catalog'])){
                         $this_catalog = Catalog::find()->where(['id'=>$get['catalog']])->one();
-                        $subcategories = $subcategories->andWhere(['idParent'=>$this_catalog->article])->all();
+                        $subcategories = $subcategories->andWhere(['idParent'=>$this_catalog->article])->orderBy(['name'=>SORT_ASC])->all();
                         if(empty($subcategories)){
                             $subcategories = Catalog::find()->where(['status'=> Catalog::STATUS_ACTIVE])->andWhere(['idParent'=>$this_catalog->idParent])->all();
                         }

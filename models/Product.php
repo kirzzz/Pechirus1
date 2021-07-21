@@ -61,6 +61,14 @@ class Product extends \yii\db\ActiveRecord
     }
 
     /**
+     * @return \yii\db\ActiveQuery
+     */
+    public static function find(): ActiveQuery
+    {
+        return parent::find()->where(['!=','product.status',0]);
+    }
+
+    /**
      * @inheritdoc
      */
     public function behaviors()
@@ -89,6 +97,7 @@ class Product extends \yii\db\ActiveRecord
                 'scope' => function ($model) {
                     /** @var \yii\db\ActiveQuery $model */
                     $model->andWhere(['hidden' => 0]);
+                    $model->andWhere(['hidden' => 0]);
                 },
                 'dataClosure' => function ($model) {
                     /** @var self $model */
@@ -96,7 +105,7 @@ class Product extends \yii\db\ActiveRecord
                         'id' => $model->article,
                         'url' => Url::toRoute(['/site/product','id'=>$model->id],true),
                         'price' => $model->price,
-                        'available' => $model->in_stock?true:false,
+                        'available' => true,
                         'store' => $model->in_stock?true:false,
                         'pickup' => $model->in_stock?true:false,
                         'delivery' => true,

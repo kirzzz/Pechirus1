@@ -49,7 +49,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             <tbody>
                             <?php foreach ($data as $datum): ?>
                                 <?php $user = \app\models\User::find()->where(['id'=>$datum->idUser])->one();?>
-                                <?php $product = \app\models\Product::find()->where(['id'=>$datum->idProduct])->one();?>
+                                <?php $product = \app\models\Product::find()->andWhere(['id'=>$datum->idProduct])->one();?>
                                 <?php $image = (isset($product->img) and isset(json_decode($product->img,true)[0]['path']))?json_decode($product->img,true)[0]['path']:'images/default/no-image.png' ?>
                                 <tr>
                                     <td><?= $datum->id ?></td>

@@ -45,14 +45,14 @@ class AdminController extends Controller
                 'only' => ['basket','brands','catalogs','comments','contact','index',
                     'notifications','orders','orders-details','shipments','user-edit','users','products',
                     'product','provider','upload','multiupload','product-fast-edit','functions','massupload',
-                    'compare-products','steal-dashboard','steal-product'
+                    'compare-products','steal-dashboard','steal-product','test-functions'
                 ],
                 'rules' => [
                     [
                         'actions' => ['basket','brands','catalogs','comments','contact','index',
                             'notifications','orders','orders-details','shipments','user-edit','users','products',
                             'product','provider','upload','multiupload','product-fast-edit','functions','massupload',
-                            'compare-products','steal-dashboard','steal-product'
+                            'compare-products','steal-dashboard','steal-product','test-functions'
                         ],
                         'allow' => true,
                         'roles' => ['admin'],
@@ -111,7 +111,7 @@ class AdminController extends Controller
                         ->andWhere(['between', "FROM_UNIXTIME(created_at,'%Y-%m-%d')", trim($dates[0]), trim($dates[1]) ])->sum('price');
                     $general_stat['orders']['count'] = Orders::find()->where(['between', "FROM_UNIXTIME(created_at,'%Y-%m-%d')", trim($dates[0]), trim($dates[1]) ])->count();
                     $general_stat['users']['count'] = User::find()->where(['between', "FROM_UNIXTIME(created_at,'%Y-%m-%d')", trim($dates[0]), trim($dates[1]) ])->count();
-                    $general_stat['products']['count'] = Product::find()->where(['between', "FROM_UNIXTIME(created_at,'%Y-%m-%d')", trim($dates[0]), trim($dates[1]) ])->count();
+                    $general_stat['products']['count'] = Product::find()->andWhere(['between', "FROM_UNIXTIME(created_at,'%Y-%m-%d')", trim($dates[0]), trim($dates[1]) ])->count();
                     $table_product_temp = Orders::find()->where(['between', "FROM_UNIXTIME(created_at,'%Y-%m-%d')", trim($dates[0]), trim($dates[1]) ])->all();
                 }
             }
@@ -131,7 +131,7 @@ class AdminController extends Controller
             if(!empty($json)){
                 arsort($json,SORT_NUMERIC);
                 $json = array_slice($json, 0, 5, true);
-                $table_product = Product::find()->where(['in','id',array_keys($json)])->all();
+                $table_product = Product::find()->andWhere(['in','id',array_keys($json)])->all();
             }
         }
         return $this->render('index',['general_stat'=>$general_stat,'table_product'=>$table_product,'json'=>$json]);
@@ -159,6 +159,8 @@ class AdminController extends Controller
     public function actionProduct()
     {
         $model = new Product();
+
+        $model->article = Product::find()->max('article') + 1;
 
         $error = '';
         $errors = new SetError();
@@ -266,7 +268,7 @@ class AdminController extends Controller
     }
 
     public function actionProducts(){
-        $query = Product::find()->where(['>','id',0]);
+        $query = Product::find()->andWhere(['>','id',0]);
         $data_catalog = Catalog::find()->all();
 
         if (Yii::$app->request->isGet) {
@@ -318,7 +320,7 @@ class AdminController extends Controller
         if(Yii::$app->request->isAjax){
             $post = Yii::$app->request->post();
             if(isset($post['id'])){
-                $product = Product::find()->where(['id'=>$post['id']])->one();
+                $product = Product::find()->andWhere(['id'=>$post['id']])->one();
                 $product->price = (isset($post['data']['price']) and $post['data']['price'] !== '')?$post['data']['price']:$product->price;
                 $product->in_stock = (isset($post['data']['in_stock']) and $post['data']['in_stock'] !== '')?$post['data']['in_stock']:$product->in_stock;
                 $product->count = (isset($post['data']['count']) and $post['data']['count'] !== '')?$post['data']['count']:$product->count;
@@ -344,7 +346,7 @@ class AdminController extends Controller
         $error = new SetError();
         if(Yii::$app->request->isAjax){
             $post = Yii::$app->request->post();
-            $functions = ['catalog-show','steal-compare'];
+            $functions = ['catalog-show','steal-compare','delete-product'];
             if(isset($post['function']) and in_array($post['function'],$functions)){
                 if($post['function'] == 'catalog-show'){
                     if (isset($post['id'])) {
@@ -367,7 +369,7 @@ class AdminController extends Controller
                     if(isset($post['id'])){
                         $compare = ProductToSteal::find()->where(['id'=>$post['id']])->one();
                         if(isset($compare->id)){
-                            $product = Product::find()->where(['id'=>$compare->id_product])->one();
+                            $product = Product::find()->andWhere(['id'=>$compare->id_product])->one();
                             $steal = Steal::find()->where(['offerId'=>$compare->id_steal])->one();
                             if(isset($steal->id) and isset($product->id)){
                                 $types = ['remove','options','description','all','remove-all','accept'];
@@ -421,6 +423,14 @@ class AdminController extends Controller
                         }
                     }else{
                         $data['error'] = 'Не удалось определить передаваемый идентификатор сравнения.';
+                    }
+                }elseif ($post['function']=='delete-product'){
+                    if(isset($post['id'])){
+                        Product::updateAll(['status'=>Product::STATUS_DELETED],['id'=>$post['id']]);
+                        $data['success'] = true;
+                        $data['text'] = 'Продукт успешно удален из каталога! Для восстановления продукта свяжитесь с администратором сайта.';
+                    }else{
+                        $data['error'] = 'Не удалось определить передаваемый идентификатор продукта.';
                     }
                 }
             }else{
@@ -690,7 +700,7 @@ class AdminController extends Controller
         $data['top']['count-site'] = Steal::find()->select(['siteName'])->distinct()->count();
         $data['top']['count-site-target'] = 10;
         $data['top']['steal-price-avg'] = Steal::find()->select(['price'])->where(['not',['idProduct'=>null]])->average('price');
-        $data['top']['my-price-avg'] = Product::find()->select(['price'])->where(['in','id',Steal::comparesProductId()])->average('price');
+        $data['top']['my-price-avg'] = Product::find()->select(['price'])->andWhere(['in','id',Steal::comparesProductId()])->average('price');
         return $this->render('steal-dashboard',['data'=>$data]);
     }
 
@@ -750,5 +760,38 @@ class AdminController extends Controller
     {
         $data = Log::find()->where(['in','type',[Log::TYPE_COMMENTS,Log::TYPE_USER,Log::TYPE_ORDERS,Log::TYPE_CONTACT]])->orderBy(['created_at'=>SORT_DESC])->all();
         return $this->render('notifications',['data'=>$data]);
+    }
+
+    public function actionTestFunctions(){
+        $data = [];
+        $load_time = time();
+        if(Yii::$app->request->isPost){
+            $products = Product::find();
+            $post = Yii::$app->request->post();
+            if(isset($post['data']) and isset($post['type']) and isset($post['percent']) and trim($post['data']) !== ''){
+                if($post['type'] == 'php_lev'){
+                    $products = $products->all();
+                    foreach (array_column($products,'name') as $index => $product_name){
+                        $lev = levenshtein($post['data'], $product_name);
+                        if(($lev/((strlen($post['data'])+strlen($product_name))/2))*100 > $post['percent']){
+                            $data[] = ['percent'=>($lev/((strlen($post['data'])+strlen($product_name))/2))*100,'name'=>$product_name,'cur_name'=>$post['data']];
+                        }
+                    }
+                }elseif ($post['type']=='php_sim'){
+                    $products = $products->all();
+                    foreach (array_column($products,'name') as $index => $product_name){
+                        similar_text($post['data'], $product_name, $perc);
+                        if($perc > $post['percent']){
+                            $data[] = ['percent'=>$perc,'name'=>$product_name,'cur_name'=>$post['data']];
+                        }
+                    }
+                }elseif ($post['type']=='mysql'){
+                    $data = $products->where('levenshtein_ratio(name,\''.$post['data'].'\') > '.$post['percent'])->all();
+                }
+            }
+        }
+        $load_time = time() - $load_time;
+        $load_time = $load_time - (int)($load_time/60)*60;
+        return $this->render('test-functions',['data'=>$data,'load_time'=>$load_time]);
     }
 }
