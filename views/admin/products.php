@@ -56,6 +56,8 @@ $new_catalog = \yii\helpers\ArrayHelper::map((array)$data_catalog,'article','nam
                                     <option <?= (isset($get['order']) and $get['order'] == 5)?'selected="selected"':'' ?> value="5">Скрытые</option>
                                     <option <?= (isset($get['order']) and $get['order'] == 6)?'selected="selected"':'' ?> value="6">Активные</option>
                                     <option <?= (isset($get['order']) and $get['order'] == 7)?'selected="selected"':'' ?> value="7">Со скидкой</option>
+                                    <option <?= (isset($get['order']) and $get['order'] == 6)?'selected="selected"':'' ?> value="8">FBS</option>
+                                    <option <?= (isset($get['order']) and $get['order'] == 7)?'selected="selected"':'' ?> value="9">Avito</option>
                                 </select>
                             </div>
                             <div class="form-group col-lg-4 col-sm-12 mb-sm-1 mb-lg-0 p-sm-0 px-lg-1" id="collapseProductDescParent">
@@ -112,6 +114,17 @@ $new_catalog = \yii\helpers\ArrayHelper::map((array)$data_catalog,'article','nam
         <div class="col-md-6 col-xl-3">
             <div class="card-box product-box">
                 <div class="product-action">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-info btn-xs waves-effect waves-light" data-toggle="dropdown" aria-expanded="false"><i class="mdi mdi-dots-vertical"></i></button>
+                        <div class="dropdown-menu float-end">
+                            <a class="dropdown-item" href="javascript:void(0)" data-admin-functions="add-to-trading-platform" data-steal-compare-id="<?= $product->id ?>" data-steal-type="<?= \app\models\AvitoToProduct::isProductActive($product->id)?'avito-delete':'avito' ?>">
+                                <?= \app\models\AvitoToProduct::isProductActive($product->id)?'Удалить из Avito':'Добавить в Avito' ?>
+                            </a>
+                            <a class="dropdown-item" href="javascript:void(0)" data-admin-functions="add-to-trading-platform" data-steal-compare-id="<?= $product->id ?>" data-steal-type="<?= \app\models\FbsToProduct::isProductActive($product->id)?'fbs-delete':'fbs' ?>">
+                                <?= \app\models\FbsToProduct::isProductActive($product->id)?'Удалить из FBS':'Добавить в FBS' ?>
+                            </a>
+                        </div>
+                    </div>
                     <a href="<?= Url::to(['admin/product','id'=>$product->id]) ?>" class="btn btn-success btn-xs waves-effect waves-light"><i class="mdi mdi-pencil"></i></a>
                     <a href="javascript: void(0);" data-admin-functions="delete-product" data-steal-compare-id="<?= $product->id ?>" class="btn btn-danger btn-xs waves-effect waves-light"><i class="mdi mdi-close"></i></a>
                 </div>

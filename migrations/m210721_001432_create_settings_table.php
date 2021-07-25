@@ -3,19 +3,20 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%fbs_to_product}}`.
+ * Handles the creation of table `{{%settings}}`.
  */
-class m210720_104133_create_fbs_to_product_table extends Migration
+class m210721_001432_create_settings_table extends Migration
 {
     /**
      * {@inheritdoc}
      */
     public function safeUp()
     {
-        $this->createTable('{{%fbs_to_product}}', [
+        $this->createTable('{{%settings}}', [
             'id' => $this->primaryKey(),
-            'id_product' => $this->integer()->notNull(),
-            'status' => $this->integer()->defaultValue(0),
+            'name' => $this->string(128),
+            'json' => $this->text(),
+            'status' => $this->integer(),
             'created_at'=>$this->integer(),
             'updated_at'=>$this->integer()
         ]);
@@ -26,6 +27,6 @@ class m210720_104133_create_fbs_to_product_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%fbs_to_product}}');
+        $this->dropTable('{{%settings}}');
     }
 }

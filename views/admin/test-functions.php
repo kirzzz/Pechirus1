@@ -1,6 +1,7 @@
 <?php
 /* @var $this yii\web\View */
 /* @var $data array */
+/* @var $href string */
 /* @var $load_time int */
 
 
@@ -102,5 +103,14 @@ $this->params['breadcrumbs'][] = $this->title;
         <?php else: ?>
             <h4 class="header-title text-center text-info">Нет пользователей</h4>
         <?php endif; ?>
+    </div>
+    <div class="row">
+        <div class="card">
+            <div class="card-body">
+                <a href="/<?= $href ?>" download="<?= explode('/',$href)[count(explode('/',$href))-1] ?>" class="btn btn-success waves-effect waves-light">
+                    Скачать <span class="btn-label-right"><i class="fe-file"></i></span>
+                </a>
+            </div>
+        </div>
     </div>
 </div>

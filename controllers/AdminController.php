@@ -2,12 +2,15 @@
 
 namespace app\controllers;
 
+use app\models\AvitoExcel;
+use app\models\AvitoToProduct;
 use app\models\Basket;
 use app\models\Brand;
 use app\models\Catalog;
 use app\models\Comments;
 use app\models\Contact;
 use app\models\CopyProduct;
+use app\models\FbsToProduct;
 use app\models\Log;
 use app\models\MultiUnload;
 use app\models\MultiUpload;
@@ -303,6 +306,10 @@ class AdminController extends Controller
                     $query->andWhere(['hidden'=>0])->andWhere(['in_stock'=>1]);
                 }elseif ($get['order'] == 7){
                     $query->andWhere('new_price IS NOT NULL');
+                }elseif ($get['order'] == 8){
+                    $query->andWhere(['in','id',FbsToProduct::getActiveId()]);
+                }elseif ($get['order'] == 9){
+                    $query->andWhere(['in','id',AvitoToProduct::getActiveId()]);
                 }
             }
         }
@@ -346,7 +353,7 @@ class AdminController extends Controller
         $error = new SetError();
         if(Yii::$app->request->isAjax){
             $post = Yii::$app->request->post();
-            $functions = ['catalog-show','steal-compare','delete-product'];
+            $functions = ['catalog-show','steal-compare','delete-product','add-to-trading-platform'];
             if(isset($post['function']) and in_array($post['function'],$functions)){
                 if($post['function'] == 'catalog-show'){
                     if (isset($post['id'])) {
@@ -431,6 +438,61 @@ class AdminController extends Controller
                         $data['text'] = 'Продукт успешно удален из каталога! Для восстановления продукта свяжитесь с администратором сайта.';
                     }else{
                         $data['error'] = 'Не удалось определить передаваемый идентификатор продукта.';
+                    }
+                }elseif ($post['function'] == 'add-to-trading-platform'){
+                    if(isset($post['id'])){
+                        $types = ['avito','fbs','avito-delete','fbs-delete'];
+                        if(isset($post['type']) and in_array($post['type'],$types)){
+                            if($post['type'] == 'avito'){
+                                if(AvitoToProduct::isProductIsset($post['id'])){
+                                    if(AvitoToProduct::isProductPassive($post['id'])){
+                                        AvitoToProduct::updateAll(['status'=>AvitoToProduct::STATUS_ACTIVE],['id_product'=>$post['id']]);
+                                        $data['success'] = true;
+                                        $data['text'] .= 'Продукт был успешно восстанавлен в каталоге Avito.';
+                                    }else{
+                                        $data['error'] = '#2046: Данный продукт уже находится в каталоге Avito. Убедительная просьба запомнить код ошибки и связаться с администратором.';
+                                    }
+                                }else{
+                                    $avito = (new AvitoToProduct(['id_product'=>$post['id'],'status'=>AvitoToProduct::STATUS_ACTIVE]))->save();
+                                    $data['success'] = true;
+                                    $data['text'] .= 'Продукт был успешно добавлен в каталог Avito.';
+                                }
+                            }elseif ($post['type'] == 'fbs'){
+                                if(FbsToProduct::isProductIsset($post['id'])){
+                                    if(FbsToProduct::isProductPassive($post['id'])){
+                                        FbsToProduct::updateAll(['status'=>FbsToProduct::STATUS_ACTIVE],['id_product'=>$post['id']]);
+                                        $data['success'] = true;
+                                        $data['text'] .= 'Продукт был успешно восстанавлен в каталоге FBS.';
+                                    }else{
+                                        $data['error'] = '#2045: Данный продукт уже находится в каталоге FBS. Убедительная просьба запомнить код ошибки и связаться с администратором.';
+                                    }
+                                }else{
+                                    $avito = (new FbsToProduct(['id_product'=>$post['id'],'status'=>FbsToProduct::STATUS_ACTIVE]))->save();
+                                    $data['success'] = true;
+                                    $data['text'] .= 'Продукт был успешно добавлен в каталог FBS.';
+                                }
+                            }elseif ($post['type'] == 'avito-delete'){
+                                if(AvitoToProduct::isProductActive($post['id'])){
+                                    AvitoToProduct::updateAll(['status'=>AvitoToProduct::STATUS_PASSIVE],['id_product'=>$post['id']]);
+                                    $data['success'] = true;
+                                    $data['text'] .= 'Продукт был успешно исключен из каталога Avito.';
+                                }else{
+                                    $data['error'] = '#2044: Данного продукта нет в каталоге Avito, прежде чем удалять - добавьте его. Убедительная просьба запомнить код ошибки и связаться с администратором.';
+                                }
+                            }elseif ($post['type'] == 'fbs-delete'){
+                                if(FbsToProduct::isProductActive($post['id'])){
+                                    FbsToProduct::updateAll(['status'=>FbsToProduct::STATUS_PASSIVE],['id_product'=>$post['id']]);
+                                    $data['success'] = true;
+                                    $data['text'] .= 'Продукт был успешно исключен из каталога FBS.';
+                                }else{
+                                    $data['error'] = '#2043: Данного продукта нет в каталоге FBS, прежде чем удалять - добавьте его. Убедительная просьба запомнить код ошибки и связаться с администратором.';
+                                }
+                            }
+                        }else{
+                            $data['error'] = '#2042: Не удалось определить требуемое действие. Убедительная просьба запомнить код ошибки и связаться с администратором.';
+                        }
+                    }else{
+                        $data['error'] = '#2041: Не удалось определить передаваемый идентификатор продукта. Убедительная просьба запомнить код ошибки и связаться с администратором.';
                     }
                 }
             }else{
@@ -792,6 +854,10 @@ class AdminController extends Controller
         }
         $load_time = time() - $load_time;
         $load_time = $load_time - (int)($load_time/60)*60;
-        return $this->render('test-functions',['data'=>$data,'load_time'=>$load_time]);
+
+        $avito = new AvitoExcel();
+        $href = $avito->createExcel();
+
+        return $this->render('test-functions',['data'=>$data,'load_time'=>$load_time,'href'=>$href]);
     }
 }

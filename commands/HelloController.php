@@ -1,6 +1,7 @@
 <?php
 namespace app\commands;
 
+use app\models\AvitoExcel;
 use app\models\Brand;
 use app\models\Catalog;
 use app\models\Product;
@@ -184,5 +185,11 @@ class HelloController extends Controller
     public function actionTestModelsQuery(){
         $q = Product::find()->andWhere(['id'=>49210])->select('name')->one();
         print_r($q);
+    }
+
+    public function actionTestAvito(){
+        $avito = new AvitoExcel();
+        //$trig = $avito->createExcel();
+        print_r(Url::to('/images/35064782/35064782_2.jpeg',true));//https://pechirus.ru/images/35064782/35064782_2.jpeg
     }
 }
